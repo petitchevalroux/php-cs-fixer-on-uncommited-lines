@@ -16,5 +16,5 @@
     },
     "autoload": {
     },
-    "bin": ["src/index.php"]
+    "bin": ["src/php-cs-fixer-on-uncommited-lines"]
 }
