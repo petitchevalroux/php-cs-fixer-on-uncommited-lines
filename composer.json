@@ -1,0 +1,20 @@
+{
+    "name": "petitchevalroux/php-cs-fixer-on-uncommited-lines",
+    "type": "application",
+    "description": "Simple php script to apply php-cs-fixer only on chunk containing uncommited line",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Patrick Poulain",
+            "email": "petitchevalroux@free.fr"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.6"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+    },
+    "bin": ["src/index.php"]
+}
