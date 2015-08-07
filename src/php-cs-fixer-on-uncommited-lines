@@ -1,14 +1,26 @@
 #!/usr/bin/env php
 <?php
+if (!isset($argv[1])) {
+    trigger_error('Missing file name', E_USER_ERROR);
+}
 
 // Source file to parse
 $sourceFile = $argv[1];
+if (!file_exists($sourceFile)) {
+    trigger_error('File "'.$sourceFile.'" does not exist', E_USER_ERROR);
+}
+
 // Get uncommited lines number
-$exec = exec('git blame '.escapeshellarg($sourceFile).' | egrep -oh \'^00000000.*?([0-9]+)\)\' | egrep -oh \'([0-9]+)\)$\' | sed -e \'s/)//g\'', $uncommitedLines);
+$exec = exec('git blame '.escapeshellarg($sourceFile).' | egrep -oh \'^00000000.*?([0-9]+)\)\' | egrep -oh \'([0-9]+)\)$\' | sed -e \'s/)//g\'', $uncommitedLines, $return);
+if ($return !== 0) {
+    trigger_error('Finding uncommited lines failed', E_USER_ERROR);
+}
 // Generate a fixed copy of source file
 $fixedFile = tempnam(sys_get_temp_dir(), '');
 copy($sourceFile, $fixedFile);
-exec('php-cs-fixer fix '.escapeshellarg($fixedFile));
+// Can't check php-cs-fixer return code because it return 1 if changes are made
+exec('php-cs-fixer fix '.escapeshellarg($fixedFile), $output, $return);
+
 // Compute diff between files
 $diffCmd = 'diff -u '.escapeshellarg($sourceFile).' '.escapeshellarg($fixedFile);
 $patch = shell_exec($diffCmd);
