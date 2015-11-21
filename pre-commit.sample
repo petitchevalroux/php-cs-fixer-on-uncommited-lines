@@ -1,0 +1,24 @@
+#!/usr/bin/php
+<?php
+//Get modified files
+exec('git diff --cached --name-status --diff-filter=ACM', $output);
+
+$cmds = [
+    '~/code/php-cs-fixer-on-uncommited-lines/src/php-cs-fixer-on-uncommited-lines',
+    'php -l'
+];
+foreach ($output as $file) {
+    $php_cs_fixer_results = null;
+    $fileName = realpath(trim(substr($file, 1)));
+    if (pathinfo($fileName, PATHINFO_EXTENSION) == "php") {
+        echo "Checking php file $fileName\n";
+        foreach($cmds as $cmd) {
+            $cmd_output = [];
+            exec($cmd.' '.escapeshellarg($fileName), $cmd_output, $cmd_return);
+            echo $cmd.' '.escapeshellarg($fileName). ":\n" . implode("\n", $cmd_output);
+            if($cmd_return !== 0) {
+                exit(1);
+            }
+        }
+    }
+}
