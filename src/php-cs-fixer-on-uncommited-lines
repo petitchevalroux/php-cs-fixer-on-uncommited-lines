@@ -28,7 +28,6 @@ foreach ($uncommitedLines as $k => $v) {
     --$uncommitedLines[$k];
 }
 $countUncommitedLines = count($uncommitedLines);
-echo 'Uncommited lines: '.implode(',', $uncommitedLines)."\n";
 // We got a diff
 $exitCode = 0;
 if (!empty($patch)) {
@@ -55,17 +54,18 @@ if (!empty($patch)) {
             }
         }
     }
-    echo "Final patch:\n$finalPatch";
     // Apply final patch on the sourceFile if needed
     if ($applyFinalPatch) {
+        echo "Formatting errors detected applying patch:\n$finalPatch\n";
         $patchFile = tempnam(sys_get_temp_dir(), '');
         file_put_contents($patchFile, $finalPatch);
         shell_exec('patch '.escapeshellarg($sourceFile).' < '.escapeshellarg($patchFile));
         unlink($patchFile);
         $exitCode = 1;
     }
-} else {
-    echo "Empty diff\n";
+}
+if($exitCode !== 1) {
+    echo "No formatting errors detected in ".$sourceFile."\n";
 }
 unlink($fixedFile);
 exit($exitCode);

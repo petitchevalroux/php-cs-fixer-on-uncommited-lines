@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-//Get modified files
+//Récupération des fichiers modifiés par le commit
 exec('git diff --cached --name-status --diff-filter=ACM', $output);
 
 $cmds = [
@@ -15,7 +15,7 @@ foreach ($output as $file) {
         foreach($cmds as $cmd) {
             $cmd_output = [];
             exec($cmd.' '.escapeshellarg($fileName), $cmd_output, $cmd_return);
-            echo $cmd.' '.escapeshellarg($fileName). ":\n" . implode("\n", $cmd_output);
+            echo $cmd.' '.escapeshellarg($fileName). ":\n" . trim(implode("\n", $cmd_output))."\n";
             if($cmd_return !== 0) {
                 exit(1);
             }
