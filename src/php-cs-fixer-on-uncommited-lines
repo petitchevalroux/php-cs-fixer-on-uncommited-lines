@@ -3,7 +3,6 @@
 if (!isset($argv[1])) {
     trigger_error('Missing file name', E_USER_ERROR);
 }
-
 // Source file to parse
 $sourceFile = $argv[1];
 if (!file_exists($sourceFile)) {
@@ -24,7 +23,6 @@ exec('php-cs-fixer fix '.escapeshellarg($fixedFile), $output, $return);
 // Compute diff between files
 $diffCmd = 'diff -u '.escapeshellarg($sourceFile).' '.escapeshellarg($fixedFile);
 $patch = shell_exec($diffCmd);
-echo $diffCmd.":\n$patch\n";
 // Blame start line at 1, unlike diff
 foreach ($uncommitedLines as $k => $v) {
     --$uncommitedLines[$k];
@@ -32,6 +30,7 @@ foreach ($uncommitedLines as $k => $v) {
 $countUncommitedLines = count($uncommitedLines);
 echo 'Uncommited lines: '.implode(',', $uncommitedLines)."\n";
 // We got a diff
+$exitCode = 0;
 if (!empty($patch)) {
     $patches = preg_split('~^@@~m', $patch);
     $finalPatch = $patches[0];
@@ -63,8 +62,10 @@ if (!empty($patch)) {
         file_put_contents($patchFile, $finalPatch);
         shell_exec('patch '.escapeshellarg($sourceFile).' < '.escapeshellarg($patchFile));
         unlink($patchFile);
+        $exitCode = 1;
     }
 } else {
     echo "Empty diff\n";
 }
 unlink($fixedFile);
+exit($exitCode);
