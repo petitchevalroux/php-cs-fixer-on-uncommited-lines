@@ -10,7 +10,8 @@
         }
     ],
     "require": {
-        "php": ">=5.3.6"
+        "php": ">=5.3.6",
+        "pear/console_commandline": "^1.2"
     },
     "require-dev": {
     },

@@ -1,10 +1,26 @@
 #!/usr/bin/env php
 <?php
-if (!isset($argv[1])) {
-    trigger_error('Missing file name', E_USER_ERROR);
+$vendorPath = realpath(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'vendor');
+require $vendorPath.DIRECTORY_SEPARATOR.'autoload.php';
+$parser = new \Console_CommandLine();
+$parser->addOption('configFile', [
+    'short_name' => '-c',
+    'long_name' => '--config-file',
+    'default' => '',
+    'description' => 'config file for php-cs-fixer with .php_cs extension',
+    'action' => 'StoreString',
+]);
+$parser->addArgument('sourceFile', [
+    'help_name' => 'file',
+    'descriptiont' => 'file',
+]);
+try {
+    $command = $parser->parse();
+} catch (Exception $exc) {
+    $parser->displayError($exc->getMessage());
 }
 // Source file to parse
-$sourceFile = $argv[1];
+$sourceFile = $command->args['sourceFile'];
 if (!file_exists($sourceFile)) {
     trigger_error('File "'.$sourceFile.'" does not exist', E_USER_ERROR);
 }
@@ -18,7 +34,12 @@ if ($return !== 0) {
 $fixedFile = tempnam(sys_get_temp_dir(), '');
 copy($sourceFile, $fixedFile);
 // Can't check php-cs-fixer return code because it return 1 if changes are made
-exec('php-cs-fixer fix '.escapeshellarg($fixedFile), $output, $return);
+$options = [];
+if (!empty($command->options['configFile'])) {
+    $options[] = '--config-file='.escapeshellarg($command->options['configFile']);
+}
+$options = !empty($options) ? implode(' ', $options) : '';
+exec('php-cs-fixer fix '.$options.' '.escapeshellarg($fixedFile), $output, $return);
 
 // Compute diff between files
 $diffCmd = 'diff -u '.escapeshellarg($sourceFile).' '.escapeshellarg($fixedFile);
@@ -64,8 +85,8 @@ if (!empty($patch)) {
         $exitCode = 1;
     }
 }
-if($exitCode !== 1) {
-    echo "No formatting errors detected in ".$sourceFile."\n";
+if ($exitCode !== 1) {
+    echo 'No formatting errors detected in '.$sourceFile."\n";
 }
 unlink($fixedFile);
 exit($exitCode);
